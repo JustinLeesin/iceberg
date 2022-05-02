@@ -681,6 +681,7 @@ abstract class MergingSnapshotProducer<ThisT> extends SnapshotProducer<ThisT> {
     return summaryBuilder.build();
   }
 
+  //here
   @Override
   public List<ManifestFile> apply(TableMetadata base) {
     Snapshot current = base.currentSnapshot();
@@ -828,6 +829,7 @@ abstract class MergingSnapshotProducer<ThisT> extends SnapshotProducer<ThisT> {
     return cachedNewManifest;
   }
 
+  //here
   private Iterable<ManifestFile> prepareDeleteManifests() {
     if (newDeleteFilesBySpec.isEmpty()) {
       return ImmutableList.of();
@@ -941,6 +943,7 @@ abstract class MergingSnapshotProducer<ThisT> extends SnapshotProducer<ThisT> {
     }
   }
 
+  //DeleteFileMerge
   private class DeleteFileMergeManager extends ManifestMergeManager<DeleteFile> {
     DeleteFileMergeManager(long targetSizeBytes, int minCountToMerge, boolean mergeEnabled) {
       super(targetSizeBytes, minCountToMerge, mergeEnabled, MergingSnapshotProducer.this::workerPool);

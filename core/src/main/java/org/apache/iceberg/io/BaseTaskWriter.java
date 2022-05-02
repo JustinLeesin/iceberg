@@ -91,6 +91,7 @@ public abstract class BaseTaskWriter<T> implements TaskWriter<T> {
 
   /**
    * Base equality delta writer to write both insert records and equality-deletes.
+   * 写入核心
    */
   protected abstract class BaseEqualityDeltaWriter implements Closeable {
     private final StructProjection structProjection;

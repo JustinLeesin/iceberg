@@ -54,6 +54,7 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Filter;
 import org.apache.iceberg.util.StructLikeSet;
 import org.apache.iceberg.util.StructProjection;
+import org.apache.iceberg.util.TableScanUtil;
 
 public abstract class DeleteFilter<T> {
   private static final long DEFAULT_SET_FILTER_THRESHOLD = 100_000L;
@@ -71,6 +72,13 @@ public abstract class DeleteFilter<T> {
   private PositionDeleteIndex deleteRowPositions = null;
   private Predicate<T> eqDeleteRows = null;
 
+  /**
+   *
+   * @param filePath
+   * @param deletes
+   * @param tableSchema
+   * @param requestedSchema
+   */
   protected DeleteFilter(String filePath, List<DeleteFile> deletes, Schema tableSchema, Schema requestedSchema) {
     this.setFilterThreshold = DEFAULT_SET_FILTER_THRESHOLD;
     this.filePath = filePath;
@@ -119,11 +127,15 @@ public abstract class DeleteFilter<T> {
   protected long pos(T record) {
     return (Long) posAccessor.get(asStructLike(record));
   }
-
+  //核心API
   public CloseableIterable<T> filter(CloseableIterable<T> records) {
     return applyEqDeletes(applyPosDeletes(records));
   }
 
+  /**
+   * applyEqDeletes
+   * @return
+   */
   private List<Predicate<T>> applyEqDeletes() {
     List<Predicate<T>> isInDeleteSets = Lists.newArrayList();
     if (eqDeletes.isEmpty()) {
@@ -179,6 +191,7 @@ public abstract class DeleteFilter<T> {
   }
 
   private CloseableIterable<T> applyEqDeletes(CloseableIterable<T> records) {
+
     // Predicate to test whether a row should be visible to user after applying equality deletions.
     Predicate<T> remainingRows = applyEqDeletes().stream()
         .map(Predicate::negate)
@@ -217,6 +230,7 @@ public abstract class DeleteFilter<T> {
     return deleteRowPositions;
   }
 
+  //applyPosDeletes
   private CloseableIterable<T> applyPosDeletes(CloseableIterable<T> records) {
     if (posDeletes.isEmpty()) {
       return records;

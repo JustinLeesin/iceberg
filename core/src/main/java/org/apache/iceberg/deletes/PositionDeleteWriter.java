@@ -33,6 +33,10 @@ import org.apache.iceberg.io.FileWriter;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.util.CharSequenceSet;
 
+/**
+ * PositionDeleteWriter 写入细节
+ * @param <T>
+ */
 public class PositionDeleteWriter<T> implements FileWriter<PositionDelete<T>, DeleteWriteResult> {
   private final FileAppender<StructLike> appender;
   private final FileFormat format;

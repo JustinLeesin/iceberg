@@ -53,6 +53,7 @@ public class Deletes {
   private Deletes() {
   }
 
+  //重要
   public static <T> CloseableIterable<T> filter(CloseableIterable<T> rows, Function<T, StructLike> rowToDeleteKey,
                                                 StructLikeSet deleteSet) {
     if (deleteSet.isEmpty()) {

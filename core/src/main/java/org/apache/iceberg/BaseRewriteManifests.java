@@ -219,7 +219,7 @@ public class BaseRewriteManifests extends SnapshotProducer<RewriteManifests> imp
     newManifests.clear();
     writers.clear();
   }
-
+  //performRewrite 没看懂
   private void performRewrite(List<ManifestFile> currentManifests) {
     reset();
 

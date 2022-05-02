@@ -92,6 +92,7 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
   protected SnapshotProducer(TableOperations ops) {
     this.ops = ops;
     this.base = ops.current();
+    // 这个缓存怎么用的 没懂
     this.manifestsWithMetadata = Caffeine
       .newBuilder()
       .build(file -> {
@@ -158,7 +159,7 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
 
   /**
    * Apply the update's changes to the base table metadata and return the new manifest list.
-   *
+   * 生成 the new manifest list
    * @param metadataToUpdate the base table metadata to apply changes to
    * @return a manifest list for the new snapshot.
    */
@@ -173,12 +174,12 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
 
     // run validations from the child operation
     validate(base);
-
+    //here
     List<ManifestFile> manifests = apply(base);
 
     if (base.formatVersion() > 1 || base.propertyAsBoolean(MANIFEST_LISTS_ENABLED, MANIFEST_LISTS_ENABLED_DEFAULT)) {
       OutputFile manifestList = manifestListPath();
-
+      //写入 ManifestList
       try (ManifestListWriter writer = ManifestLists.write(
           ops.current().formatVersion(), manifestList, snapshotId(), parentSnapshotId, sequenceNumber)) {
 
@@ -279,6 +280,7 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
     return base;
   }
 
+  //flink任务checkpoint时调用的
   @Override
   public void commit() {
     // this is always set to the latest commit attempt's snapshot id.
@@ -293,6 +295,7 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
               2.0 /* exponential */)
           .onlyRetryOn(CommitFailedException.class)
           .run(taskOps -> {
+            // here
             Snapshot newSnapshot = apply();
             newSnapshotId.set(newSnapshot.snapshotId());
             TableMetadata.Builder update = TableMetadata.buildFrom(base);
@@ -372,12 +375,13 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
   protected void deleteFile(String path) {
     deleteFunc.accept(path);
   }
-
+ // snapshot manifest文件命名
   protected OutputFile manifestListPath() {
     return ops.io().newOutputFile(ops.metadataFileLocation(FileFormat.AVRO.addExtension(
         String.format("snap-%d-%d-%s", snapshotId(), attempt.incrementAndGet(), commitUUID))));
   }
 
+  //manifest文件命名
   protected OutputFile newManifestOutput() {
     return ops.io().newOutputFile(
         ops.metadataFileLocation(FileFormat.AVRO.addExtension(commitUUID + "-m" + manifestCount.getAndIncrement())));
@@ -386,7 +390,7 @@ abstract class SnapshotProducer<ThisT> implements SnapshotUpdate<ThisT> {
   protected ManifestWriter<DataFile> newManifestWriter(PartitionSpec spec) {
     return ManifestFiles.write(ops.current().formatVersion(), spec, newManifestOutput(), snapshotId());
   }
-
+  //here
   protected ManifestWriter<DeleteFile> newDeleteManifestWriter(PartitionSpec spec) {
     return ManifestFiles.writeDeleteManifest(ops.current().formatVersion(), spec, newManifestOutput(), snapshotId());
   }

@@ -115,7 +115,7 @@ class DeleteFileIndex {
   DeleteFile[] forEntry(ManifestEntry<DataFile> entry) {
     return forDataFile(entry.sequenceNumber(), entry.file());
   }
-
+  //找DataFile对应的DeleteFile
   DeleteFile[] forDataFile(long sequenceNumber, DataFile file) {
     Pair<Integer, StructLikeWrapper> partition = partition(file.specId(), file.partition());
     Pair<long[], DeleteFile[]> partitionDeletes = sortedDeletesByPartition.get(partition);
@@ -376,6 +376,10 @@ class DeleteFileIndex {
       return this;
     }
 
+    /**
+     * 构建deleteFile list
+     * @return
+     */
     DeleteFileIndex build() {
       // read all of the matching delete manifests in parallel and accumulate the matching files in a queue
       Queue<ManifestEntry<DeleteFile>> deleteEntries = new ConcurrentLinkedQueue<>();
@@ -385,6 +389,7 @@ class DeleteFileIndex {
           .run(deleteFile -> {
             try (CloseableIterable<ManifestEntry<DeleteFile>> reader = deleteFile) {
               for (ManifestEntry<DeleteFile> entry : reader) {
+                // 只读 sequenceNumber 更大的
                 if (entry.sequenceNumber() > minSequenceNumber) {
                   // copy with stats for better filtering against data file stats
                   deleteEntries.add(entry.copy());

@@ -24,7 +24,7 @@ import org.apache.iceberg.types.Types.StructType;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
-
+//status状态
 interface ManifestEntry<F extends ContentFile<F>> {
   enum Status {
     EXISTING(0),
