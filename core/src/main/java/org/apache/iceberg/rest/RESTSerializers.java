@@ -29,10 +29,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.IOException;
+import org.apache.iceberg.MetadataUpdate;
+import org.apache.iceberg.MetadataUpdateParser;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SortOrderParser;
+import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.UnboundPartitionSpec;
 import org.apache.iceberg.UnboundSortOrder;
 import org.apache.iceberg.catalog.Namespace;
@@ -61,8 +65,45 @@ public class RESTSerializers {
         .addSerializer(UnboundPartitionSpec.class, new UnboundPartitionSpecSerializer())
         .addDeserializer(UnboundPartitionSpec.class, new UnboundPartitionSpecDeserializer())
         .addSerializer(UnboundSortOrder.class, new UnboundSortOrderSerializer())
-        .addDeserializer(UnboundSortOrder.class, new UnboundSortOrderDeserializer());
+        .addDeserializer(UnboundSortOrder.class, new UnboundSortOrderDeserializer())
+        .addSerializer(MetadataUpdate.class, new MetadataUpdateSerializer())
+        .addDeserializer(MetadataUpdate.class, new MetadataUpdateDeserializer())
+        .addSerializer(TableMetadata.class, new TableMetadataSerializer())
+        .addDeserializer(TableMetadata.class, new TableMetadataDeserializer());
     mapper.registerModule(module);
+  }
+
+  public static class TableMetadataDeserializer extends JsonDeserializer<TableMetadata> {
+    @Override
+    public TableMetadata deserialize(JsonParser p, DeserializationContext context) throws IOException {
+      JsonNode node = p.getCodec().readTree(p);
+      return TableMetadataParser.fromJson(node);
+    }
+  }
+
+  public static class TableMetadataSerializer extends JsonSerializer<TableMetadata> {
+    @Override
+    public void serialize(TableMetadata metadata, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+      TableMetadataParser.toJson(metadata, gen);
+    }
+  }
+
+  public static class MetadataUpdateDeserializer extends JsonDeserializer<MetadataUpdate> {
+    @Override
+    public MetadataUpdate deserialize(JsonParser p, DeserializationContext ctxt)
+        throws IOException {
+      JsonNode node = p.getCodec().readTree(p);
+      return MetadataUpdateParser.fromJson(node);
+    }
+  }
+
+  public static class MetadataUpdateSerializer extends JsonSerializer<MetadataUpdate> {
+    @Override
+    public void serialize(MetadataUpdate value, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+      MetadataUpdateParser.toJson(value, gen);
+    }
   }
 
   public static class ErrorResponseDeserializer extends JsonDeserializer<ErrorResponse> {
